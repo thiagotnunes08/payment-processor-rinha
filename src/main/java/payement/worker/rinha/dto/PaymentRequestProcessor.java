@@ -1,4 +1,4 @@
-package payement.work.job.client;
+package payement.worker.rinha.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;

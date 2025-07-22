@@ -1,4 +1,4 @@
-package payement.work.job.client;
+package payement.worker.rinha.client;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,6 +6,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import payement.worker.rinha.dto.PaymentRequestProcessor;
+import payement.worker.rinha.entities.Payment;
+import payement.worker.rinha.entities.Processor;
+import payement.worker.rinha.entities.Status;
+import payement.worker.rinha.repositories.PaymentRepository;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -47,7 +52,7 @@ public class ProcessorPaymentClient {
 
             CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-            paymentRepository.updateBy(Status.PAID,Processor.DEFAULT,payment.getId());
+            paymentRepository.updateBy(Status.PAID, Processor.DEFAULT,payment.getId());
 
 
         } catch (Exception e) {

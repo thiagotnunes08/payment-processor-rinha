@@ -1,4 +1,4 @@
-package payement.work.job.client;
+package payement.worker.rinha.entities;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicUpdate;

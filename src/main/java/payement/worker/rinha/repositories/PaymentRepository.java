@@ -1,9 +1,10 @@
-package payement.work.job.client;
+package payement.worker.rinha.repositories;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.QueryHint;
-import org.hibernate.LockMode;
+import payement.worker.rinha.entities.Payment;
+import payement.worker.rinha.entities.Processor;
+import payement.worker.rinha.entities.Status;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
 @ApplicationScoped
 public class PaymentRepository {
 
-    public void updateBy(Status status, Processor processor,Long id) {
+    public void updateBy(Status status, Processor processor, Long id) {
         getEntityManager()
                 .createQuery("""
         update Payment p 

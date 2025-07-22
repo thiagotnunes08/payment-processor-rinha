@@ -1,4 +1,4 @@
-package payement.work.job.client;
+package payement.worker.rinha.entities;
 
 public enum Processor {
 

@@ -1,18 +1,20 @@
-package payement.work.job.client;
+package payement.worker.rinha.job;
 
 import io.quarkus.scheduler.Scheduled;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import payement.worker.rinha.client.ProcessorPaymentClient;
+import payement.worker.rinha.entities.Status;
+import payement.worker.rinha.repositories.PaymentRepository;
 
 import java.util.concurrent.Callable;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class ProcessPaymentJob {
+public class ProcessPayment {
 
     @Inject
     PaymentRepository paymentRepository;
