@@ -4,6 +4,10 @@ import io.quarkus.scheduler.Scheduled;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import java.util.concurrent.Callable;
+
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,20 +26,34 @@ public class ProcessPaymentJob {
     @ConfigProperty(name = "limit.query")
     Integer limitQuery;
 
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    @ConfigProperty(name = "thread.size")
+    Integer threadSize;
+
+    ExecutorService executor = Executors.newFixedThreadPool(2);
 
 
     @Scheduled(every = "{cron.job}")
-//    @Transactional
+    @Transactional
     public void process() {
 
-        paymentRepository
-                .findAllByLimited(Status.PENDING,limitQuery)
-                .forEach(payment -> processorPaymentClient.processPayment(payment));
-    }
+        try {
+            var paymentsPending = paymentRepository
+                    .findAllByLimited(Status.PENDING, limitQuery);
 
-//    @Scheduled(every = "5s")
-//    public void verifyDisponibility() {
-//        processorPaymentClient.verify();
-//    }
+
+            var tarefas = paymentsPending
+                    .stream()
+                    .map(p -> (Callable<Void>) () -> {
+                        processorPaymentClient.processPayment(p);
+                        return null;
+                    }).toList();
+
+            executor.invokeAll(tarefas);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } finally {
+            executor.shutdown();
+        }
+    }
 }

@@ -1,6 +1,9 @@
 package payement.work.job.client;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
+import org.hibernate.LockMode;
 
 import java.util.List;
 
@@ -21,20 +24,18 @@ public class PaymentRepository {
                 .setParameter("id", id)
                 .executeUpdate();
     }
+
     public List<Payment> findAllByLimited(Status status, int limit) {
         String query = """
-        SELECT * 
-        FROM payment 
-        WHERE status = :status 
-        FOR UPDATE SKIP LOCKED
-        LIMIT :limit
+       select p from Payment p where p.status = :status
     """;
 
         return getEntityManager()
-                .createNativeQuery(query, Payment.class)
-                .setParameter("status", status) // ou status.toString(), depende do tipo
-//                .setParameter("limit", limit)
+                .createQuery(query, Payment.class)
+                .setParameter("status", status)
+                .setMaxResults(limit)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setHint("jakarta.persistence.lock.timeout", -2)
                 .getResultList();
     }
-
 }

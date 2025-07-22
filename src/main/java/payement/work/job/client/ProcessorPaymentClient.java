@@ -24,7 +24,6 @@ public class ProcessorPaymentClient {
     @Inject
     PaymentRepository paymentRepository;
 
-//    private boolean defaultIsUp = false;
 
     @Transactional
     public  void processPayment(Payment payment) {
@@ -38,8 +37,6 @@ public class ProcessorPaymentClient {
                     payment.getCorrelationId(),
                     payment.getAmount(),
                     payment.getRequestedAt()));
-
-            Thread.sleep(Duration.ofSeconds(10).toMillis());
 
             var request = HttpRequest.newBuilder()
                     .uri(URI.create("http://payment-processor-default:8080/payments"))
@@ -82,24 +79,4 @@ public class ProcessorPaymentClient {
             }
         }
     }
-
-//    public void verify() {
-//
-//        try {
-//
-//            var request = HttpRequest.newBuilder()
-//                    .uri(URI.create("http://payment-processor-default:8080/payments/service-health"))
-//                    .header("Content-Type", "application/json")
-//                    .GET()
-//                    .build();
-//
-//            var response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//            OBJECT_MAPPER.readValue(response.body(), HeathCheckResponse.class);
-//
-//        } catch (Exception e2) {
-//
-//            System.out.println("deu ruim até no fallback!");
-//        }
-//    }
 }
