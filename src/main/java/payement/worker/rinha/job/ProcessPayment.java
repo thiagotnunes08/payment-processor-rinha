@@ -8,11 +8,6 @@ import payement.worker.rinha.client.ProcessorPaymentClient;
 import payement.worker.rinha.entities.Status;
 import payement.worker.rinha.repositories.PaymentRepository;
 
-import java.util.concurrent.Callable;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 
 public class ProcessPayment {
 
@@ -28,34 +23,13 @@ public class ProcessPayment {
     @ConfigProperty(name = "limit.query")
     Integer limitQuery;
 
-    @ConfigProperty(name = "thread.size")
-    Integer threadSize;
-
-    ExecutorService executor = Executors.newFixedThreadPool(2);
-
-
     @Scheduled(every = "{cron.job}")
     @Transactional
     public void process() {
 
-        try {
-            var paymentsPending = paymentRepository
-                    .findAllByLimited(Status.PENDING, limitQuery);
+        paymentRepository
+                .findAllByLimited(Status.PENDING, limitQuery)
+                .forEach(processorPaymentClient::processPayment);
 
-
-            var tarefas = paymentsPending
-                    .stream()
-                    .map(p -> (Callable<Void>) () -> {
-                        processorPaymentClient.processPayment(p);
-                        return null;
-                    }).toList();
-
-            executor.invokeAll(tarefas);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        } finally {
-            executor.shutdown();
-        }
     }
 }

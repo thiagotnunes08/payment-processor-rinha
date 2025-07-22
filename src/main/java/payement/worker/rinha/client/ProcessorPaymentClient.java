@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import payement.worker.rinha.dto.PaymentRequestProcessor;
 import payement.worker.rinha.entities.Payment;
 import payement.worker.rinha.entities.Processor;
@@ -21,17 +20,17 @@ import java.time.Duration;
 @ApplicationScoped
 public class ProcessorPaymentClient {
 
-    private static final HttpClient CLIENT = HttpClient.newBuilder()
+    private final HttpClient CLIENT = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .build();
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Inject
     PaymentRepository paymentRepository;
 
 
-    @Transactional
-    public  void processPayment(Payment payment) {
+    public void processPayment(Payment payment) {
 
         try {
 
@@ -39,11 +38,11 @@ public class ProcessorPaymentClient {
 
             var json = OBJECT_MAPPER.writeValueAsString(
                     new PaymentRequestProcessor(
-                    payment.getCorrelationId(),
-                    payment.getAmount(),
-                    payment.getRequestedAt()));
-
+                            payment.getCorrelationId(),
+                            payment.getAmount(),
+                            payment.getRequestedAt()));
             var request = HttpRequest.newBuilder()
+
                     .uri(URI.create("http://payment-processor-default:8080/payments"))
                     .header("Content-Type", "application/json")
                     .timeout(Duration.ofSeconds(5))
@@ -51,8 +50,7 @@ public class ProcessorPaymentClient {
                     .build();
 
             CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-            paymentRepository.updateBy(Status.PAID, Processor.DEFAULT,payment.getId());
+            paymentRepository.updateBy(Status.PAID, Processor.DEFAULT, payment.getId());
 
 
         } catch (Exception e) {
@@ -66,7 +64,7 @@ public class ProcessorPaymentClient {
                                 payment.getRequestedAt()));
 
                 var request = HttpRequest.newBuilder()
-                        .uri(URI.create("http://localhost:8002/payments"))
+                        .uri(URI.create("http://payment-processor-fallback:8080/payments"))
                         .header("Content-Type", "application/json")
                         .timeout(Duration.ofSeconds(5))
                         .POST(HttpRequest.BodyPublishers.ofString(json))
@@ -74,13 +72,11 @@ public class ProcessorPaymentClient {
 
                 CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-                paymentRepository.updateBy(Status.PAID,Processor.FALLBACK,payment.getId());
-
-                System.out.println("atualizado pagamento id " + payment.getId());
+                paymentRepository.updateBy(Status.PAID, Processor.FALLBACK, payment.getId());
 
             } catch (Exception e2) {
 
-                System.out.println("deu ruim até no fallback!"+e2.getCause());
+                System.out.printf("deu ruim até no fallback! msg: %s causa: %s msg2:%s", e2.getMessage(),e.getCause(),e2.getLocalizedMessage());
             }
         }
     }
