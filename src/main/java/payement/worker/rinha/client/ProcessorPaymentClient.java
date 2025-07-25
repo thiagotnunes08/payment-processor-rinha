@@ -3,6 +3,7 @@ package payement.worker.rinha.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import payement.worker.rinha.dto.PaymentRequestProcessor;
@@ -33,9 +34,6 @@ public class ProcessorPaymentClient {
     public void processPayment(Payment payment) {
 
         try {
-
-            OBJECT_MAPPER.registerModule(new JavaTimeModule());
-
             var json = OBJECT_MAPPER.writeValueAsString(
                     new PaymentRequestProcessor(
                             payment.getCorrelationId(),
@@ -50,7 +48,7 @@ public class ProcessorPaymentClient {
                     .build();
 
             CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            paymentRepository.updateBy(Status.PAID, Processor.DEFAULT, payment.getId());
+            paymentRepository.updateBy(Status.PAID, Processor.DEFAULT, payment.getCorrelationId());
 
 
         } catch (Exception e) {
@@ -72,12 +70,17 @@ public class ProcessorPaymentClient {
 
                 CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-                paymentRepository.updateBy(Status.PAID, Processor.FALLBACK, payment.getId());
+                paymentRepository.updateBy(Status.PAID, Processor.FALLBACK, payment.getCorrelationId());
 
             } catch (Exception e2) {
 
                 System.out.printf("deu ruim até no fallback! msg: %s causa: %s msg2:%s", e2.getMessage(),e.getCause(),e2.getLocalizedMessage());
             }
         }
+    }
+
+    @PostConstruct
+    void init() {
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 }

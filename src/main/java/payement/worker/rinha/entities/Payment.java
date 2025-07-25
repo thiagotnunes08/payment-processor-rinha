@@ -12,9 +12,7 @@ import java.util.UUID;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "correlation_id",unique = true)
+    @Column(name = "correlation_id")
     private UUID correlationId;
     private BigDecimal amount;
     private Status status;
@@ -37,9 +35,5 @@ public class Payment {
 
     public Instant getRequestedAt() {
         return requestedAt;
-    }
-
-    public Long getId() {
-        return id;
     }
 }

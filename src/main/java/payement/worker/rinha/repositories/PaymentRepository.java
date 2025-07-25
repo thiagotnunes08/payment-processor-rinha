@@ -7,22 +7,23 @@ import payement.worker.rinha.entities.Processor;
 import payement.worker.rinha.entities.Status;
 
 import java.util.List;
+import java.util.UUID;
 
 import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
 
 @ApplicationScoped
 public class PaymentRepository {
 
-    public void updateBy(Status status, Processor processor, Long id) {
+    public void updateBy(Status status, Processor processor, UUID correlationId) {
         getEntityManager()
                 .createQuery("""
         update Payment p 
         set p.status = :status, p.processor = :processor 
-        where p.id = :id
+        where p.correlationId = :correlationId
     """)
                 .setParameter("status", status)
                 .setParameter("processor", processor)
-                .setParameter("id", id)
+                .setParameter("correlationId", correlationId)
                 .executeUpdate();
     }
 
