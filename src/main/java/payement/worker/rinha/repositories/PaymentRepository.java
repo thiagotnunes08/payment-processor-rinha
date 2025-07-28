@@ -2,6 +2,7 @@ package payement.worker.rinha.repositories;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.LockModeType;
+import jakarta.transaction.Transactional;
 import payement.worker.rinha.entities.Payment;
 import payement.worker.rinha.entities.Processor;
 import payement.worker.rinha.entities.Status;
@@ -14,6 +15,7 @@ import static io.quarkus.hibernate.orm.panache.Panache.getEntityManager;
 @ApplicationScoped
 public class PaymentRepository {
 
+    @Transactional
     public void updateBy(Status status, Processor processor, UUID correlationId) {
         getEntityManager()
                 .createQuery("""
@@ -27,6 +29,7 @@ public class PaymentRepository {
                 .executeUpdate();
     }
 
+    @Transactional
     public List<Payment> findAllByLimited(Status status, int limit) {
         String query = """
        select p from Payment p where p.status = :status
